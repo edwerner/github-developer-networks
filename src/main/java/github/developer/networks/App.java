@@ -29,43 +29,44 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public class App {
-	
+
 	private ArrayList<Edge> edgeList = new ArrayList<Edge>();
 	private final static String USER_AGENT = "Mozilla/5.0";
 	private static final String OAUTH_KEY = "29f62521efacbbd90fb65036b3ce62a7e172cdd3";
-	
+
 	public static void main(String[] args) throws IOException, InterruptedException {
-		
+
 		parseEdges();
-//		final int size = 25;
-//		final RepositoryId repo = new RepositoryId("eclipse", "che");
-//		final CommitService service = new CommitService();
-//		for (Collection<RepositoryCommit> commits : service.pageCommits(repo, size)) {
-//			for (RepositoryCommit commit : commits) {
-//				Thread.sleep(5000);
-//				String sha = commit.getSha().substring(0, 7);
-//				String author = commit.getCommit().getAuthor().getName();
-//				Date date = commit.getCommit().getAuthor().getDate();
-//				String email = commit.getCommit().getAuthor().getEmail();
-//				try {
-//					// GET /repos/:owner/:repo/commits/:commit_sha
-//					sendGet("https://api.github.com/repos/eclipse/che/commits/" + sha);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}
+		// final int size = 25;
+		// final RepositoryId repo = new RepositoryId("eclipse", "che");
+		// final CommitService service = new CommitService();
+		// for (Collection<RepositoryCommit> commits : service.pageCommits(repo, size))
+		// {
+		// for (RepositoryCommit commit : commits) {
+		// Thread.sleep(5000);
+		// String sha = commit.getSha().substring(0, 7);
+		// String author = commit.getCommit().getAuthor().getName();
+		// Date date = commit.getCommit().getAuthor().getDate();
+		// String email = commit.getCommit().getAuthor().getEmail();
+		// try {
+		// // GET /repos/:owner/:repo/commits/:commit_sha
+		// sendGet("https://api.github.com/repos/eclipse/che/commits/" + sha);
+		// } catch (Exception e) {
+		// e.printStackTrace();
+		// }
+		// }
+		// }
 	}
-	
+
 	private static void sendGet(String url) throws Exception {
-		
+
 		URL obj = new URL(url);
 		HttpURLConnection con = (HttpURLConnection) obj.openConnection();
 
 		// optional default is GET
 		con.setRequestMethod("GET");
 
-		//add request header
+		// add request header
 		con.setRequestProperty("User-Agent", USER_AGENT);
 		con.setRequestProperty("Authorization", "Bearer " + OAUTH_KEY);
 
@@ -75,7 +76,7 @@ public class App {
 
 		BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
 		String inputLine;
-		
+
 		FileWriter writer = new FileWriter("commits.txt", true);
 		BufferedWriter bw = new BufferedWriter(writer);
 
@@ -86,14 +87,15 @@ public class App {
 		in.close();
 		bw.close();
 	}
-	
+
 	public static void parseEdges() {
-		HashMap<String, String> nodeMap = new HashMap<String, String>();
+		// HashMap<String, String> nodeMap = new HashMap<String, String>();
+		ArrayList<Node> nodeList = new ArrayList<Node>();
 		Node userNode = null;
 		JsonObject parserObject;
 		String fileName = "commits.txt";
 		String line = null;
-
+		int counter = 1;
 		try {
 			FileReader fileReader = new FileReader(fileName);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -102,25 +104,34 @@ public class App {
 				parserObject = (JsonObject) new JsonParser().parse(line);
 				JsonObject nodeObject = parserObject.getAsJsonObject("commit");
 				JsonObject nodeAuthor = nodeObject.getAsJsonObject("author");
-				String nodeEmail = nodeAuthor.get("email").getAsString();
+				String email = nodeAuthor.get("email").getAsString();
 				JsonArray nodeFiles = parserObject.getAsJsonArray("files");
-				
-				for (JsonElement pa : nodeFiles) {
-				    JsonObject paymentObj = pa.getAsJsonObject();
-				    String filename = paymentObj.get("filename").getAsString();
-				    nodeMap.put(nodeEmail, filename);
+
+				Node node = new Node();
+				node.setEmail(email);
+
+				for (JsonElement nodeFile : nodeFiles) {
+					JsonObject fileObj = nodeFile.getAsJsonObject();
+					String filename = fileObj.get("filename").getAsString();
+					node.addFile(filename);
 				}
+				nodeList.add(node);
 			}
+
 			bufferedReader.close();
-			
-			Iterator it = nodeMap.entrySet().iterator();
-		    while (it.hasNext()) {
-		        Map.Entry pair = (Map.Entry)it.next();
-		        System.out.println(pair.getKey() + " : " + pair.getValue());
-		        it.remove();
-		    }
 		} catch (IOException e) {
 			e.printStackTrace();
+		} finally {
+			for (Node node : nodeList) {
+
+				System.out.println("*********************************");
+				System.out.println(node.getEmail());
+				for (String n : node.getFileList()) {
+					System.out.println(n);
+				}
+				System.out.println(counter);
+				counter++;
+			}
 		}
 	}
 }
