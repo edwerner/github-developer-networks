@@ -20,6 +20,8 @@ import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.CommitService;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -97,7 +99,13 @@ public class App {
 				JsonObject nodeObject = parserObject.getAsJsonObject("commit");
 				JsonObject nodeAuthor = nodeObject.getAsJsonObject("author");
 				String nodeEmail = nodeAuthor.get("email").getAsString();
-				System.out.println(nodeEmail);
+				JsonArray nodeFiles = parserObject.getAsJsonArray("files");
+				
+				for (JsonElement pa : nodeFiles) {
+				    JsonObject paymentObj = pa.getAsJsonObject();
+				    String filename = paymentObj.get("filename").getAsString();
+				    System.out.println(filename);
+				}
 			}
 			bufferedReader.close();
 		} catch (IOException e) {
