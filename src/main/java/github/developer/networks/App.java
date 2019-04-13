@@ -13,7 +13,10 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.egit.github.core.CommitFile;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -85,6 +88,7 @@ public class App {
 	}
 	
 	public static void parseEdges() {
+		HashMap<String, String> nodeMap = new HashMap<String, String>();
 		Node userNode = null;
 		JsonObject parserObject;
 		String fileName = "commits.txt";
@@ -104,10 +108,17 @@ public class App {
 				for (JsonElement pa : nodeFiles) {
 				    JsonObject paymentObj = pa.getAsJsonObject();
 				    String filename = paymentObj.get("filename").getAsString();
-				    System.out.println(filename);
+				    nodeMap.put(nodeEmail, filename);
 				}
 			}
 			bufferedReader.close();
+			
+			Iterator it = nodeMap.entrySet().iterator();
+		    while (it.hasNext()) {
+		        Map.Entry pair = (Map.Entry)it.next();
+		        System.out.println(pair.getKey() + " : " + pair.getValue());
+		        it.remove();
+		    }
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
