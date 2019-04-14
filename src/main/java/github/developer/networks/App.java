@@ -88,14 +88,11 @@ public class App {
 		bw.close();
 	}
 
-	public static void parseEdges() {
-		// HashMap<String, String> nodeMap = new HashMap<String, String>();
+	public static void parseEdges() throws IOException {
 		ArrayList<Node> nodeList = new ArrayList<Node>();
-		Node userNode = null;
 		JsonObject parserObject;
 		String fileName = "commits.txt";
 		String line = null;
-		int counter = 1;
 		try {
 			FileReader fileReader = new FileReader(fileName);
 			BufferedReader bufferedReader = new BufferedReader(fileReader);
@@ -117,21 +114,24 @@ public class App {
 				}
 				nodeList.add(node);
 			}
-
 			bufferedReader.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} finally {
-			for (Node node : nodeList) {
-
-				System.out.println("*********************************");
-				System.out.println(node.getEmail());
-				for (String n : node.getFileList()) {
-					System.out.println(n);
+			FileWriter writer = new FileWriter("edges.txt", true);
+			BufferedWriter bw = new BufferedWriter(writer);
+			for (Node outerNode : nodeList) {
+				for (String n : outerNode.getFileList()) {
+					for (Node innerNode : nodeList) {
+						ArrayList<String> fileList = innerNode.getFileList();
+						if (fileList.contains(n) && !outerNode.getEmail().equals(innerNode.getEmail())) {
+							bw.write(outerNode.getEmail() + ":" + innerNode.getEmail());
+							bw.newLine();
+						}
+					}
 				}
-				System.out.println(counter);
-				counter++;
 			}
+			bw.close();
 		}
 	}
 }
